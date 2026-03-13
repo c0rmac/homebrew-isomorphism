@@ -22,11 +22,9 @@ class Isomorphism < Formula
     # Automatic backend selection based on platform
     if OS.mac? && Hardware::CPU.arm?
       args << "-DUSE_MLX=ON"
-    elsif OS.linux?
+    else
       # Assuming SYCL/oneMKL for Linux/PC builds
       args << "-DUSE_SYCL=ON"
-    else
-      odie "Isomorphism: Unsupported platform. Requires Apple Silicon (MLX) or Linux (SYCL)."
     end
 
     system "cmake", "-S", ".", "-B", "build", *args
