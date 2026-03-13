@@ -2,7 +2,7 @@ class Isomorphism < Formula
   desc "Platform-agnostic C++ math wrapper unifying MLX and SYCL backends"
   homepage "https://github.com/c0rmac/isomorphism"
   url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "2696cdff3c1ffb7ff1f9fa7a3baa91512265da055220e300c53cdfbadbfb208b" # Generate using 'shasum -a 256' on the tarball
+  sha256 "7df157e69f1e76f7aec51a423e729168d61419dc7d5fb5ac2235a4bfec83e556" # Generate using 'shasum -a 256' on the tarball
   license "MIT"
 
   depends_on "cmake" => :build
