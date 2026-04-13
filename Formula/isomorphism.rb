@@ -6,68 +6,71 @@ class Isomorphism < Formula
   license "MIT"
 
   # ---------------------------------------------------------------------------
-  # Backend options — exactly one must be chosen.
+  # Backend options — one or more may be selected simultaneously.
+  # Each produces its own library: libisomorphism_mlx, libisomorphism_eigen, …
+  #
   # Usage:
-  #   brew install isomorphism                        # auto: mlx on Apple Silicon, eigen elsewhere
-  #   brew install isomorphism --with-mlx             # Apple Silicon GPU (MLX)
-  #   brew install isomorphism --with-eigen           # CPU (Eigen)
-  #   brew install isomorphism --with-torch           # PyTorch / LibTorch
+  #   brew install isomorphism                              # auto: mlx on Apple Silicon, eigen elsewhere
+  #   brew install isomorphism --with-mlx                  # Apple Silicon GPU (MLX)
+  #   brew install isomorphism --with-eigen                # CPU (Eigen)
+  #   brew install isomorphism --with-torch                # PyTorch / LibTorch
+  #   brew install isomorphism --with-mlx --with-torch     # both simultaneously
   # ---------------------------------------------------------------------------
-  option "with-mlx",   "Build with the Apple Silicon (MLX/Metal) backend"
-  option "with-eigen", "Build with the Eigen CPU backend"
-  option "with-torch", "Build with the PyTorch (LibTorch) backend"
+  option "with-mlx",   "Build the Apple Silicon (MLX/Metal) backend"
+  option "with-eigen", "Build the Eigen CPU backend"
+  option "with-torch", "Build the PyTorch (LibTorch) backend"
 
   depends_on "cmake" => :build
 
-  # Backend dependencies — only pulled in when the matching option is active
-  depends_on "mlx"     if build.with?("mlx")   || (build.without?("eigen") && build.without?("torch") && OS.mac? && Hardware::CPU.arm?)
-  depends_on "eigen"   if build.with?("eigen") || (build.without?("mlx")   && build.without?("torch") && !OS.mac?)
+  # Determine whether auto-selection applies (no explicit backend chosen)
+  _none_explicit = build.without?("mlx") && build.without?("eigen") && build.without?("torch")
+
+  # Backend dependencies — only pulled in for active backends
+  depends_on "mlx"     if build.with?("mlx")   || (_none_explicit && OS.mac? && Hardware::CPU.arm?)
+  depends_on "eigen"   if build.with?("eigen") || (_none_explicit && !OS.mac?)
   depends_on "pytorch" if build.with?("torch")
 
-  # abseil is a transitive dep of LibTorch's protobuf — must be present so
-  # CMake can register the absl:: targets before find_package(Torch) runs.
+  # abseil is a transitive dep of LibTorch's protobuf — CMake needs it to
+  # register absl:: targets before find_package(Torch) validates link interfaces.
   depends_on "abseil"  if build.with?("torch")
 
   # ---------------------------------------------------------------------------
-  # Determine the active backend, enforcing that exactly one is selected
+  # Returns the list of backends to build.
+  # Falls back to a single auto-selected backend when nothing is explicit.
   # ---------------------------------------------------------------------------
-  def active_backend
+  def selected_backends
     explicit = [:mlx, :eigen, :torch].select { |b| build.with?(b.to_s) }
-
-    if explicit.size > 1
-      odie "isomorphism: specify only one backend (--with-mlx, --with-eigen, or --with-torch)."
-    end
-
-    if explicit.size == 1
-      return explicit.first
-    end
+    return explicit unless explicit.empty?
 
     # Auto-select: MLX on Apple Silicon, Eigen everywhere else
-    (OS.mac? && Hardware::CPU.arm?) ? :mlx : :eigen
+    [(OS.mac? && Hardware::CPU.arm?) ? :mlx : :eigen]
   end
 
   def install
-    backend = active_backend
-
     args = std_cmake_args + %W[
       -DCMAKE_BUILD_TYPE=Release
       -DBUILD_SHARED_LIBS=ON
       -DBUILD_TESTING=OFF
     ]
 
-    case backend
-    when :mlx
-      args << "-DUSE_MLX=ON"
-    when :eigen
-      args << "-DUSE_EIGEN=ON"
-    when :torch
-      args << "-DUSE_TORCH=ON"
-      # Point CMake at the Homebrew pytorch and abseil prefixes so that
-      # find_package(Torch) and find_package(absl) both succeed.
-      torch_prefix  = Formula["pytorch"].opt_prefix
-      abseil_prefix = Formula["abseil"].opt_prefix
-      args << "-DCMAKE_PREFIX_PATH=#{torch_prefix};#{abseil_prefix}"
-      args << "-Dabsl_DIR=#{abseil_prefix}/lib/cmake/absl"
+    selected_backends.each do |backend|
+      case backend
+      when :mlx
+        args << "-DUSE_MLX=ON"
+
+      when :eigen
+        args << "-DUSE_EIGEN=ON"
+
+      when :torch
+        args << "-DUSE_TORCH=ON"
+        # Point CMake at the Homebrew pytorch and abseil prefixes so that
+        # find_package(Torch) and find_package(absl) both succeed without
+        # relying on brew being in the build tool's PATH.
+        torch_prefix  = Formula["pytorch"].opt_prefix
+        abseil_prefix = Formula["abseil"].opt_prefix
+        args << "-DCMAKE_PREFIX_PATH=#{torch_prefix};#{abseil_prefix};#{HOMEBREW_PREFIX}"
+        args << "-Dabsl_DIR=#{abseil_prefix}/lib/cmake/absl"
+      end
     end
 
     system "cmake", "-S", ".", "-B", "build", *args
@@ -85,8 +88,12 @@ class Isomorphism < Formula
       }
     EOS
 
-    # Resolve the include/lib paths for the active backend so the test compiles
-    backend_flags = case active_backend
+    # Test against the first installed backend.
+    # Each backend installs as libisomorphism_<name> — pick the right one.
+    backend = selected_backends.first
+    lib_name = "isomorphism_#{backend}"
+
+    backend_flags = case backend
     when :mlx
       mlx = Formula["mlx"].opt_prefix
       "-I#{mlx}/include -L#{mlx}/lib -lmlx"
@@ -98,7 +105,7 @@ class Isomorphism < Formula
     end
 
     system ENV.cxx, "-std=c++20", "test.cpp",
-           "-I#{include}", "-L#{lib}", "-lisomorphism",
+           "-I#{include}", "-L#{lib}", "-l#{lib_name}",
            *backend_flags.split, "-o", "test"
     system "./test"
   end
