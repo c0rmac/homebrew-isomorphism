@@ -10,9 +10,7 @@ class IsomorphismMlx < Formula
   depends_on "mlx"
 
   # Guard add_subdirectory(tests) on BUILD_TESTING so -DBUILD_TESTING=OFF works.
-  patch do
-    data
-  end
+  patch :DATA
 
   def install
     libomp = Formula["libomp"].opt_prefix

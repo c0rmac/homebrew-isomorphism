@@ -48,9 +48,7 @@ class Isomorphism < Formula
   end
 
   # Guard add_subdirectory(tests) on BUILD_TESTING so -DBUILD_TESTING=OFF works.
-  patch do
-    data
-  end
+  patch :DATA
 
   def install
     # Apple Clang does not ship with OpenMP; point CMake at the Homebrew libomp.
