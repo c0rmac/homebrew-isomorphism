@@ -21,6 +21,7 @@ class Isomorphism < Formula
   option "with-torch", "Build the PyTorch (LibTorch) backend"
 
   depends_on "cmake" => :build
+  depends_on "libomp"
 
   # Determine whether auto-selection applies (no explicit backend chosen)
   _none_explicit = build.without?("mlx") && build.without?("eigen") && build.without?("torch")
@@ -47,10 +48,17 @@ class Isomorphism < Formula
   end
 
   def install
-    args = std_cmake_args + %W[
-      -DCMAKE_BUILD_TYPE=Release
-      -DBUILD_SHARED_LIBS=ON
-      -DBUILD_TESTING=OFF
+    # Apple Clang does not ship with OpenMP; point CMake at the Homebrew libomp.
+    # These three variables are required for FindOpenMP to succeed on macOS.
+    libomp = Formula["libomp"].opt_prefix
+
+    args = std_cmake_args + [
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DBUILD_SHARED_LIBS=ON",
+      "-DBUILD_TESTING=OFF",
+      "-DOpenMP_CXX_FLAGS=-Xpreprocessor -fopenmp -I#{libomp}/include",
+      "-DOpenMP_CXX_LIB_NAMES=omp",
+      "-DOpenMP_omp_LIBRARY=#{libomp}/lib/libomp.dylib",
     ]
 
     selected_backends.each do |backend|
