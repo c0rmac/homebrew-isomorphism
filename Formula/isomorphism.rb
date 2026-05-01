@@ -1,8 +1,8 @@
 class Isomorphism < Formula
   desc "Hardware-agnostic C++ tensor math library with pluggable backends (MLX, Eigen, Torch)"
   homepage "https://github.com/c0rmac/isomorphism"
-  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.0.2.tar.gz"
-  sha256 "3330891d1c515555150a4e16db09b28c419ae944b279a043158c0db6b0bd0cb2"
+  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.0.3.tar.gz"
+  sha256 "3b0c9af0914eb29e23219c89dca1e2519c5451014e64a5aa06f58a209a93b365"
   license "MIT"
 
   # ---------------------------------------------------------------------------
