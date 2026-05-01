@@ -47,6 +47,11 @@ class Isomorphism < Formula
     [(OS.mac? && Hardware::CPU.arm?) ? :mlx : :eigen]
   end
 
+  # Guard add_subdirectory(tests) on BUILD_TESTING so -DBUILD_TESTING=OFF works.
+  patch do
+    data
+  end
+
   def install
     # Apple Clang does not ship with OpenMP; point CMake at the Homebrew libomp.
     # These three variables are required for FindOpenMP to succeed on macOS.
@@ -118,3 +123,13 @@ class Isomorphism < Formula
     system "./test"
   end
 end
+
+__END__
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -284,1 +284,4 @@
+-add_subdirectory(tests)
++if (BUILD_TESTING)
++    enable_testing()
++    add_subdirectory(tests)
++endif ()
