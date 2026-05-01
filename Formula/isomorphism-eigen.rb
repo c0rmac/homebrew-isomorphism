@@ -1,16 +1,13 @@
 class IsomorphismEigen < Formula
   desc "Hardware-accelerated C++ tensor math library — Eigen CPU backend"
   homepage "https://github.com/c0rmac/isomorphism"
-  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.0.1.tar.gz"
-  sha256 "f7da8210fe108ca1dcb7ef61e0258bd103c85e11a086420b8960079c6a9741ad"
+  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.0.2.tar.gz"
+  sha256 "3330891d1c515555150a4e16db09b28c419ae944b279a043158c0db6b0bd0cb2"
   license "MIT"
 
   depends_on "cmake" => :build
   depends_on "libomp"
   depends_on "eigen"
-
-  # Guard add_subdirectory(tests) on BUILD_TESTING so -DBUILD_TESTING=OFF works.
-  patch :DATA
 
   def install
     libomp = Formula["libomp"].opt_prefix
@@ -52,13 +49,3 @@ class IsomorphismEigen < Formula
     system "./test"
   end
 end
-
-__END__
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -284,1 +284,4 @@
--add_subdirectory(tests)
-+if (BUILD_TESTING)
-+    enable_testing()
-+    add_subdirectory(tests)
-+endif ()
