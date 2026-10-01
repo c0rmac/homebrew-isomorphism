@@ -1,8 +1,8 @@
 class IsomorphismTorch < Formula
   desc "Hardware-accelerated C++ tensor math library — LibTorch backend"
   homepage "https://github.com/c0rmac/isomorphism"
-  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.1.0.tar.gz"
-  sha256 "abed1e96fe34a9fc77cb56af6a00a6cc1a1846fca174835d82be9595b8585edc"
+  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.1.1.tar.gz"
+  sha256 "ff2f0d9ac1d8930b24a3c524742340dc578c2b7e794061cefc9692d028e240e5"
   license "MIT"
 
   depends_on "cmake" => :build
