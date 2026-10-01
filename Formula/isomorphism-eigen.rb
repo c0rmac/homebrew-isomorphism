@@ -1,8 +1,8 @@
 class IsomorphismEigen < Formula
   desc "Hardware-accelerated C++ tensor math library — Eigen CPU backend"
   homepage "https://github.com/c0rmac/isomorphism"
-  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.0.3.tar.gz"
-  sha256 "3b0c9af0914eb29e23219c89dca1e2519c5451014e64a5aa06f58a209a93b365"
+  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.1.0.tar.gz"
+  sha256 "abed1e96fe34a9fc77cb56af6a00a6cc1a1846fca174835d82be9595b8585edc"
   license "MIT"
 
   depends_on "cmake" => :build

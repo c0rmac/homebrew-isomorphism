@@ -1,8 +1,8 @@
 class Isomorphism < Formula
   desc "Hardware-agnostic C++ tensor math library with pluggable backends (MLX, Eigen, Torch)"
   homepage "https://github.com/c0rmac/isomorphism"
-  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.0.3.tar.gz"
-  sha256 "3b0c9af0914eb29e23219c89dca1e2519c5451014e64a5aa06f58a209a93b365"
+  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.1.0.tar.gz"
+  sha256 "abed1e96fe34a9fc77cb56af6a00a6cc1a1846fca174835d82be9595b8585edc"
   license "MIT"
 
   # ---------------------------------------------------------------------------
@@ -29,6 +29,8 @@ class Isomorphism < Formula
   # Backend dependencies — only pulled in for active backends
   depends_on "mlx"     if build.with?("mlx")   || (_none_explicit && OS.mac? && Hardware::CPU.arm?)
   depends_on "eigen"   if build.with?("eigen") || (_none_explicit && !OS.mac?)
+  # QR, eigh and SVD on the GPU for the MLX backend
+  depends_on "c0rmac/metal-linalg/metal-linalg" if build.with?("mlx") || (_none_explicit && OS.mac? && Hardware::CPU.arm?)
   depends_on "pytorch" if build.with?("torch")
 
   # abseil is a transitive dep of LibTorch's protobuf — CMake needs it to
@@ -65,6 +67,7 @@ class Isomorphism < Formula
       case backend
       when :mlx
         args << "-DUSE_MLX=ON"
+        args << "-DMETAL_LINALG_USE_INSTALLED=ON" # the dependency above; Homebrew builds have no network
 
       when :eigen
         args << "-DUSE_EIGEN=ON"
