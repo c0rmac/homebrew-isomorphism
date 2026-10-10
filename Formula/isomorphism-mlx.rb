@@ -6,7 +6,7 @@ class IsomorphismMlx < Formula
   license "MIT"
 
   depends_on "cmake" => :build
-  depends_on "c0rmac/metal-linalg/metal-linalg" # QR, eigh and SVD on the GPU
+  depends_on "c0rmac/metal-linalg/metal-linalg" # the decompositions and solves, on the GPU and the CPU
   depends_on "libomp"
   depends_on "mlx"
 

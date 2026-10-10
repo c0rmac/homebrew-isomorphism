@@ -29,8 +29,10 @@ class Isomorphism < Formula
   # Backend dependencies — only pulled in for active backends
   depends_on "mlx"     if build.with?("mlx")   || (_none_explicit && OS.mac? && Hardware::CPU.arm?)
   depends_on "eigen"   if build.with?("eigen") || (_none_explicit && !OS.mac?)
-  # QR, eigh and SVD on the GPU for the MLX backend
-  depends_on "c0rmac/metal-linalg/metal-linalg" if build.with?("mlx") || (_none_explicit && OS.mac? && Hardware::CPU.arm?)
+  # The decompositions and solves for the MLX backend, and on Apple Silicon for
+  # the Torch backend's CPU and MPS tensors (isomorphism 1.2 and later)
+  depends_on "c0rmac/metal-linalg/metal-linalg" if build.with?("mlx") ||
+                                                   (OS.mac? && Hardware::CPU.arm? && (_none_explicit || build.with?("torch")))
   depends_on "pytorch" if build.with?("torch")
 
   # abseil is a transitive dep of LibTorch's protobuf — CMake needs it to
@@ -81,6 +83,7 @@ class Isomorphism < Formula
         abseil_prefix = Formula["abseil"].opt_prefix
         args << "-DCMAKE_PREFIX_PATH=#{torch_prefix};#{abseil_prefix};#{HOMEBREW_PREFIX}"
         args << "-Dabsl_DIR=#{abseil_prefix}/lib/cmake/absl"
+        args << "-DMETAL_LINALG_USE_INSTALLED=ON" if OS.mac? && Hardware::CPU.arm? # as for :mlx
       end
     end
 

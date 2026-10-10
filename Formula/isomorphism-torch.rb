@@ -9,6 +9,8 @@ class IsomorphismTorch < Formula
   depends_on "libomp"
   depends_on "pytorch"
   depends_on "abseil"  # transitive dep of LibTorch protobuf
+  # Decompositions and solves of CPU and MPS tensors (isomorphism 1.2 and later)
+  depends_on "c0rmac/metal-linalg/metal-linalg" if OS.mac? && Hardware::CPU.arm?
 
   def install
     libomp        = Formula["libomp"].opt_prefix
@@ -22,6 +24,7 @@ class IsomorphismTorch < Formula
       "-DUSE_TORCH=ON",
       "-DCMAKE_PREFIX_PATH=#{torch_prefix};#{abseil_prefix};#{HOMEBREW_PREFIX}",
       "-Dabsl_DIR=#{abseil_prefix}/lib/cmake/absl",
+      "-DMETAL_LINALG_USE_INSTALLED=ON", # the dependency above; Homebrew builds have no network
       "-DOpenMP_CXX_FLAGS=-Xpreprocessor -fopenmp -I#{libomp}/include",
       "-DOpenMP_CXX_LIB_NAMES=omp",
       "-DOpenMP_omp_LIBRARY=#{libomp}/lib/libomp.dylib",
