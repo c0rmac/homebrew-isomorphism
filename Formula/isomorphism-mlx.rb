@@ -1,8 +1,8 @@
 class IsomorphismMlx < Formula
   desc "Hardware-accelerated C++ tensor math library — Apple MLX (Metal) backend"
   homepage "https://github.com/c0rmac/isomorphism"
-  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.1.1.tar.gz"
-  sha256 "ff2f0d9ac1d8930b24a3c524742340dc578c2b7e794061cefc9692d028e240e5"
+  url "https://github.com/c0rmac/isomorphism/archive/refs/tags/v1.2.0.tar.gz"
+  sha256 "42e1bbce18846c45d3ef256473c350274f85f46569a0928d0ec2f0755ca1c415"
   license "MIT"
 
   depends_on "cmake" => :build
